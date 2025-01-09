@@ -1,0 +1,1 @@
+# Scoop-the-Pool-Template
