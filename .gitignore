@@ -1,11 +1,35 @@
 *.vs
-*.pdb
-*.ipdb
+
+# Build artifacts
+*.exe
+*.dll
+*.lib
 *.obj
+*.o
+*.pdb
+*.ilk
+*.idb
+*.exp
+*.manifest
 *.tlog
 *.lastbuildstate
 *.log
-*.recipe
-*.iobj
-*.dll
-*.exe
+*.pch
+
+# Visual Studio temporary files
+*.suo
+*.user
+*.ncb
+*.sln.docstates
+*.filters
+*.cache
+*.VC.db
+*.VC.opendb
+
+# Directories
+bin/
+obj/
+Debug/
+Release/
+x64/
+ipch/
