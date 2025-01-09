@@ -1,7 +1,7 @@
 # Scoop the (Paged) Pool Template
 Scoop the Pool is an exploitation technique applicable to many Windows pool overflow vulnerabilities. This example of the technique creates an arbitrary read primitive and arbitrary decrement from a paged pool overflow (See [this article](https://www.sstic.org/media/SSTIC2020/SSTIC-actes/pool_overflow_exploitation_since_windows_10_19h1/SSTIC2020-Article-pool_overflow_exploitation_since_windows_10_19h1-bayet_fariello.pdf) for further details on adapting this to the non-paged pool). The arbitrary decrement is utilized to change the current thread's PreviousMode bit to 0, enabling the thread to read and write kernel memory with Windows APIs. 
 
-Note the PreviousMode decrement technique does not work in latest Windows 11 builds, including build 26100. The technique **does** work on Windows 11 build 26100.
+Note the PreviousMode technique does not work in latest Windows 11 builds, including build 26100. The technique **does** work on Windows 11 build 26100. *The arbitrary read and decrement function on all versions of Windows; that functionality is separate from the PreviousMode decrement.*
 
 The template's payload will utilize the read/write primitives to elevate privileges, stealing the SYSTEM process token and spawning cmd.exe as NT AUTHORITY\SYSTEM.
 
